@@ -23,8 +23,24 @@ public class HeapController {
 
     // ── Static heap snapshot (loaded once by the frontend) ─────────────────
     @GetMapping("/health")
-    public String health() {
-        return "HeapVortex backend is running";
+    public java.util.Map<String, Object> health() {
+        return java.util.Map.of(
+            "status", "UP",
+            "service", "HeapVortex",
+            "version", "1.0.0",
+            "timestamp", System.currentTimeMillis()
+        );
+    }
+
+    @GetMapping("/stats")
+    public java.util.Map<String, Object> getStats() {
+        return java.util.Map.of(
+            "totalNodes", NODE_COUNT,
+            "maxHeapBytes", MAX_HEAP,
+            "gcCycleMs", CYCLE_MS,
+            "simulatedClasses", 8,
+            "description", "Simulated JVM heap snapshot — 10,000 objects across 8 class types"
+        );
     }
 
     @GetMapping("/heap")
