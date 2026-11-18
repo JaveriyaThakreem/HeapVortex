@@ -137,9 +137,10 @@ function HeapScene({ snapshot, onSelect }) {
     raycaster.params.Mesh.threshold = 1;
     const pointer = new THREE.Vector2();
     let down = false, dragged = false, lastX = 0, lastY = 0;
+    let autoRotate = true, autoTimer = null;
 
-    const onPointerDown = e => { down = true; dragged = false; lastX = e.clientX; lastY = e.clientY; };
-    const onPointerUp   = () => { down = false; };
+    const onPointerDown = e => { down = true; dragged = false; lastX = e.clientX; lastY = e.clientY; autoRotate = false; clearTimeout(autoTimer); };
+    const onPointerUp   = () => { down = false; clearTimeout(autoTimer); autoTimer = setTimeout(() => { autoRotate = true; }, 1500); };
     const onPointerMove = e => {
       if (!down) return;
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
@@ -150,6 +151,17 @@ function HeapScene({ snapshot, onSelect }) {
     };
     const onWheel = e => {
       camera.position.z = THREE.MathUtils.clamp(camera.position.z + e.deltaY * 0.08, 120, 500);
+      autoRotate = false;
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => { autoRotate = true; }, 2000);
+    };
+    // Press R to snap camera back to default position
+    const onKeyDown = e => {
+      if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey) {
+        camera.position.z = 265;
+        scene.rotation.set(0, 0, 0);
+        autoRotate = true;
+      }
     };
     const onClick = e => {
       if (dragged) return;
@@ -163,6 +175,7 @@ function HeapScene({ snapshot, onSelect }) {
       if (entry) selectRef.current(entry.node);
     };
 
+    window.addEventListener('keydown', onKeyDown);
     renderer.domElement.addEventListener('pointerdown', onPointerDown);
     renderer.domElement.addEventListener('click', onClick);
     renderer.domElement.addEventListener('wheel', onWheel, { passive: true });
@@ -181,6 +194,8 @@ function HeapScene({ snapshot, onSelect }) {
     const animate = () => {
       if (disposed) return;
       frame = requestAnimationFrame(animate);
+      // Slow auto-rotation when the user is not interacting
+      if (autoRotate) scene.rotation.y += 0.0008;
       renderer.render(scene, camera);
     };
     animate();
@@ -188,7 +203,9 @@ function HeapScene({ snapshot, onSelect }) {
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
+      window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', onResize);
+      clearTimeout(autoTimer);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointermove', onPointerMove);
       renderer.domElement.removeEventListener('pointerdown', onPointerDown);
@@ -441,6 +458,11 @@ export default function App() {
               <span><i className="dot strings"    />Strings / Threads</span>
               <span><i className="dot collections"/>Collections</span>
               <span><i className="dot objects"    />Generic Objects</span>
+            </div>
+            <div className="graph-hint">
+              <span>🖱 Drag to rotate</span>
+              <span>🔍 Scroll to zoom</span>
+              <span>⌨ Press <kbd>R</kbd> to reset camera</span>
             </div>
           </section>
         </div>

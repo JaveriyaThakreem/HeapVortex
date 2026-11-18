@@ -146,3 +146,7 @@ footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 1
   .scene { height: 290px; }
   footer { flex-direction: column; }
 }
+
+/* ── Graph hint bar ──────────────────────────────────────────────────────── */
+.graph-hint { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 8px 18px 10px; color: #4a677f; font-size: 10px; border-top: 1px solid #131e2a; }
+kbd { font: 9px 'DM Mono', monospace; background: #142030; border: 1px solid #2a4155; border-radius: 3px; padding: 2px 5px; color: #7eaacc; }
