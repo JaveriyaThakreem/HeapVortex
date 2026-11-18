@@ -446,7 +446,9 @@ export default function App() {
                 <p>Drag to rotate · scroll to zoom · click a node to inspect</p>
               </div>
               <span className="snapshot-pill">
-                {snapshot ? '10,000-NODE SNAPSHOT' : 'LOADING GRAPH…'}
+                {snapshot
+                  ? `${snapshot.nodes.length.toLocaleString()}-NODE SNAPSHOT`
+                  : 'LOADING GRAPH…'}
               </span>
             </div>
             {snapshot
