@@ -150,3 +150,10 @@ footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 1
 /* ── Graph hint bar ──────────────────────────────────────────────────────── */
 .graph-hint { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 8px 18px 10px; color: #4a677f; font-size: 10px; border-top: 1px solid #131e2a; }
 kbd { font: 9px 'DM Mono', monospace; background: #142030; border: 1px solid #2a4155; border-radius: 3px; padding: 2px 5px; color: #7eaacc; }
+
+/* ── Metric card hover & focus improvements ──────────────────────────────── */
+.metric-card { transition: border-color .2s ease, box-shadow .2s ease; }
+.metric-card:hover { border-color: #2a4f6e; box-shadow: 0 4px 24px rgba(84,210,233,.07); }
+
+/* Focus-visible ring for keyboard accessibility */
+*:focus-visible { outline: 2px solid #54d2e9; outline-offset: 3px; border-radius: 4px; }
