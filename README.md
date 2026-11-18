@@ -1,44 +1,79 @@
 # HeapVortex — 3D JVM Memory Profiler Dashboard
 
-This is a complete runnable dashboard starter with a Spring Boot API and a React/Three.js frontend. It renders 10,000 simulated object nodes using Three.js `InstancedMesh`, with a graph view and object inspector in one dashboard.
+A full-stack JVM heap visualizer built with **React + Three.js** (frontend) and **Spring Boot** (backend). It renders 10,000 simulated heap objects as interactive GPU-instanced spheres in a 3D scene, alongside live memory metrics updated every 3 seconds.
 
-## Important accuracy note
-The 10,000 nodes and memory figures are generated sample data so the dashboard can be tested without risking a real JVM. This version does not yet attach to a real JVM, parse `.hprof` files, or calculate actual retained sizes. The UI labels the source as a simulated snapshot. Replace the sample-data service with real JMX / Eclipse MAT integration for measured values.
+## Architecture
+
+```
+┌─────────────────────┐        HTTP/JSON         ┌────────────────────────┐
+│  React + Three.js   │ ◄──────────────────────► │  Spring Boot REST API  │
+│  (Vite dev server)  │   /api/heap  /api/live   │  port 8080             │
+└─────────────────────┘                           └────────────────────────┘
+```
+
+**Frontend** (`frontend/`):
+- `App.jsx` — root component: 3D scene, metric cards, sparkline, GC feed, inspector
+- `api.js` — thin fetch wrappers for `/api/heap` and `/api/live`
+- `style.css` — dark-theme CSS (no CSS framework)
+
+**Backend** (`backend/`):
+- `HeapController` — `/api/heap` (10,000-node snapshot) and `/api/live` (live metrics)
+- Models: `HeapNode`, `HeapEdge`, `HeapSnapshot`, `LiveMetrics`, `GcEvent`, `TopObject`
+- `CorsConfig` — allows Vite dev-server origin during development
 
 ## Requirements
-- JDK 21+
-- Maven 3.9+
-- Node.js 20+ and npm
-- VS Code
 
-## Start backend
-Terminal 1:
+| Tool | Version |
+|------|---------|
+| JDK  | 21+     |
+| Maven | 3.9+   |
+| Node.js | 20+  |
+| npm  | 10+     |
+
+## Quick Start
+
+**Terminal 1 — backend:**
 ```powershell
 cd backend
 mvn spring-boot:run
 ```
-Test `http://localhost:8080/api/heap`
+Verify: `http://localhost:8080/api/health` → `HeapVortex backend is running`
 
-## Start frontend
-Terminal 2:
+**Terminal 2 — frontend:**
 ```powershell
 cd frontend
 npm install
 npm run dev
 ```
-Open the local URL printed by Vite, usually `http://127.0.0.1:5173`.
+Open the Vite URL (usually `http://127.0.0.1:5173`).
 
-Keep both terminals open. The backend provides the API; the frontend displays it.
+## Troubleshooting
 
-## Main features
-- One dark dashboard with metric cards, 3D graph, legend and inspector
-- 10,000 nodes rendered with GPU instancing
-- Drag to rotate, scroll to zoom, click a node to inspect
-- Spring Boot REST API and generated sample graph
+| Symptom | Fix |
+|---------|-----|
+| `CORS error` in browser console | Ensure Spring Boot is on port 8080 and `CorsConfig` allows `http://localhost:5173` |
+| `API request failed (404)` | Backend not running — start it first |
+| Blank 3D canvas | WebGL not available; try Chrome/Edge |
+| `npm install` fails | Delete `node_modules` and `package-lock.json`, then retry |
 
-## Next milestones for the actual assignment
-1. Parse `.hprof` heap dumps through Eclipse MAT APIs.
-2. Implement paths to GC Roots and reliable retained-size analysis.
-3. Connect only to authorized JVMs via secured JMX.
-4. Add WebSocket streaming, authentication/TLS, Docker and large-graph tests.
-Never expose JMX publicly; it can grant powerful control over a JVM.
+## Features
+
+- **10,000 GPU-instanced nodes** rendered with `THREE.InstancedMesh` — single draw call per category
+- **Live sawtooth GC simulation** — heap climbs 38 % → 83 % over a 42-second cycle
+- **Sparkline trend chart** — last 50 samples, pure SVG, no chart library
+- **Object Inspector** — click any sphere to see its class, shallow/retained size
+- **GC Event Feed** — newest G1 Young / Old GC events with pause time and bytes freed
+- **Top Memory Consumers** — 6 object types ranked by retained size, updated per tick
+- **Keyboard shortcut** — press `R` to reset camera to default position
+
+## Roadmap
+
+1. Parse real `.hprof` heap dumps via Eclipse MAT APIs
+2. Implement GC-root paths and accurate retained-size calculation
+3. Secure JMX attachment (never expose JMX publicly)
+4. WebSocket streaming for sub-second metric updates
+5. Docker Compose for one-command local stack
+6. Authentication + TLS for the REST API
+7. Large-graph pagination / LOD for 100,000+ node dumps
+
+> **Security note:** Never expose JMX endpoints publicly — they grant deep control over a running JVM.
