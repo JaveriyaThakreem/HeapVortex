@@ -22,6 +22,19 @@ public class HeapController {
     private static final long   FAKE_START = 1_735_000_000_000L;
 
     // ── Static heap snapshot (loaded once by the frontend) ─────────────────
+    @GetMapping("/summary")
+    public HeapSummary getHeapSummary() {
+        // Edge count mirrors the binary-tree parent links built in /heap
+        int edgeCount = NODE_COUNT - 1;
+        return new HeapSummary(
+            NODE_COUNT,
+            edgeCount,
+            322_122_547L,
+            MAX_HEAP,
+            "SIMULATED SNAPSHOT · 10,000 OBJECTS"
+        );
+    }
+
     @GetMapping("/health")
     public java.util.Map<String, Object> health() {
         return java.util.Map.of(
